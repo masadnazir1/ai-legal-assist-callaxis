@@ -1,8 +1,8 @@
 <?php
-// ob_start();
+ob_start();
 // Dashboard (SECURE VERSION) - JWT Protected
 
-// require_once __DIR__ . '/../jwt/jwt-session.php';
+require_once __DIR__ . '/../jwt/jwt-session.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -652,7 +652,7 @@
 
 </html>
 
-<!-- <?php
+<?php
 $page_content = ob_get_clean();
 require_once __DIR__ . '/includes/single-page-ai.php';
-?> -->
+?>

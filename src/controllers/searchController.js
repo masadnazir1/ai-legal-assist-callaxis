@@ -35,6 +35,8 @@ import { searchCaselaws } from "../services/searchCaselaws.js";
 import { generateAIResponse } from "../services/LLMService.js";
 import { generateSearchableKeyword } from "../services/aiKeywordService.js";
 import { filterUserQuery } from "../services/filterUserQueryService.js";
+import { logFailedQuery } from "../Utils/logFailedQuery.js";
+import { logger } from "../Utils/logger.js";
 
 export const searchController = async (req, res) => {
   const { query } = req.body;
@@ -44,7 +46,9 @@ export const searchController = async (req, res) => {
     const filterResult = await filterUserQuery(query);
 
     if (!filterResult.allowed) {
-      console.log("Query rejected:", filterResult.reason);
+      //log on the terminal as well
+      logger.error("Query rejected:");
+      logFailedQuery(query, filterResult.reason);
       return res.status(401).json({
         success: false,
         message: filterResult.reason,

@@ -59,7 +59,6 @@ export const generateAIResponse = async (
   if (!caselaws || caselaws.length === 0) {
     logger.warn("No caselaws provided to AI service");
   }
-  console.log("caselaws", caseIds);
 
   try {
     const prompt = `
