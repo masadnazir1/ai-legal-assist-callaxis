@@ -60,7 +60,6 @@ export const generateAIResponse = async (
     logger.warn("No caselaws provided to AI service");
   }
   console.log("caselaws", caseIds);
-  console.log("Found the caselaws:", caselaws?.length, "AND", caselaws[0]);
 
   try {
     const prompt = `
