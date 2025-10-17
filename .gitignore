@@ -1,0 +1,8 @@
+/logs
+logs
+/.logs
+./logs
+
+.node_modules
+node_modules
+/node_modules
