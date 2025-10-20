@@ -449,10 +449,11 @@
     showWelcomePlaceholder();
 
     textarea.addEventListener("input", () => {
-        textarea.style.height = "auto";
-        textarea.style.height = textarea.scrollHeight + "px";
+        textarea.style.height = "auto"; // reset height
+        const newHeight = textarea.scrollHeight; // measure new height
+        textarea.style.height = `${newHeight}px`; // apply new height
 
-        const isMultiline = textarea.scrollHeight > 60; // adjust 60 to your base single-line height
+        const isMultiline = newHeight > 60; // base single-line height
         chatInputForm.style.borderRadius = isMultiline ? "20px" : "100px";
     });
 
