@@ -769,9 +769,10 @@
         } catch (err) {
             console.error("Fetch error:", err);
             removeTypingIndicator(typing);
-            if (err !== 'AbortError') {
+            if (err.name !== "AbortError") {
                 appendMessage("Network error or stream closed.", "ai-message-bubble");
-
+            } else {
+                console.log("Stream aborted by user — no error message shown.");
             }
         } finally {
             toggleSendButton(false);
