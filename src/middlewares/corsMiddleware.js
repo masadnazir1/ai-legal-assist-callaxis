@@ -1,29 +1,22 @@
 export const corsMiddleware = (req, res, next) => {
-  // Allowed origin — you can later load this from .env
-  const allowedOrigin = process.env.CLIENT_URL || "http://localhost:3000";
+  const allowedOrigins = (process.env.CLIENT_URLS || "")
+    .split(",")
+    .map((url) => url.trim());
 
-  console.log(`
-==========================================
-🌐  ALLOWED CORS ORIGINS
-------------------------------------------
-${process.env.CLIENT_URL || "No CORS URL configured"}
-==========================================
-`);
+  const origin = req.headers.origin;
 
-  res.header("Access-Control-Allow-Origin", allowedOrigin);
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization, X-Requested-With"
   );
-
-  // Allow credentials (cookies, tokens)
   res.header("Access-Control-Allow-Credentials", "true");
 
-  // Handle preflight (OPTIONS) requests
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
+  if (req.method === "OPTIONS") return res.sendStatus(200);
 
   next();
 };

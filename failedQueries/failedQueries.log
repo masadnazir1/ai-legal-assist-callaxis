@@ -52,3 +52,8 @@ Assistant can make mistakes. Check important info." | Reason: Your message does 
 2025-10-21T19:25:17.516Z | Query: "yar agar urdu ma yah roman urdu ma koi sawal kro to jawab da gah?/" | Reason: Your message is asking about language preferences for questions, which is not related to legal matters.
 2025-10-21T19:25:25.408Z | Query: "yar agar urdu ma yah roman urdu ma koi sawal kro to jawab da gah?/" | Reason: Your message is asking about the language preference for questions, which is not related to legal matters.
 2025-10-21T19:29:40.694Z | Query: "⛔ Stream stopped by user." | Reason: Your message does not relate to any legal matters or inquiries.
+2025-10-21T19:48:13.604Z | Query: "Stream stopped by user." | Reason: Your message does not relate to any legal matters or inquiries.
+2025-10-21T19:48:20.457Z | Query: "Stream stopped by user." | Reason: Your message does not relate to any legal matters or inquiries.
+2025-10-21T20:04:54.981Z | Query: "hello" | Reason: Moderation service failed.
+2025-10-21T20:20:19.534Z | Query: "pk" | Reason: The message does not contain any legal terms or references related to law or judiciary.
+2025-10-21T20:20:47.627Z | Query: "what can you assist me about?" | Reason: Your message is a general inquiry and does not mention any legal topics or terms.

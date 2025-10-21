@@ -449,6 +449,11 @@
     .toggle-sidebar-button {
         display: none;
     }
+
+
+    .fa-stop {
+        display: none;
+    }
     </style>
 </head>
 
@@ -472,7 +477,6 @@
                 <div class="intelligent-indicator text-sm text-gray-400">
                     <!-- toggle button is fully working we ma require in feature -->
                     <button id="toggle-sidebar" class="toggle-sidebar-button">Toggle Sidebar</button>
-                    <button onclick="cancelStream()">Cancel Stream</button>
 
                     <i class="fas fa-brain mr-1 text-green-500"></i>
                     AI Powered
@@ -494,6 +498,8 @@
                     <div class="button-box">
                         <button id="send-button" class="send-message-button-ai" type="submit">
                             <i class="fas fa-paper-plane text-white"></i>
+                            <i class="fas fa-stop text-white"></i>
+
                             <img id="send-loader" src="https://i.gifer.com/ZZ5H.gif" class="hidden w-10 h-10"
                                 alt="loading" />
                         </button>
@@ -513,8 +519,15 @@
     const toggleBtn = document.getElementById("toggle-sidebar");
     const sidebar = document.getElementById("sidebar");
 
+
+    //
+    const sendIcon = sendBtn.querySelector(".fa-paper-plane");
+    const stopIcon = sendBtn.querySelector(".fa-stop");
+    const loader = document.getElementById("send-loader");
     //global controller
     let controller;
+    //
+    let isStreaming = false;
 
 
     //// user cancels
@@ -576,26 +589,30 @@
         textarea.style.borderRadius = "8px";
     });
 
+    sendBtn.addEventListener("click", () => {
+        if (isStreaming && controller) {
+            controller.abort();
+            toggleSendButton(false);
+            appendMessage("Stream stopped by user.", "ai-message-bubble");
+        }
+    });
 
-
-    //fun to show the loader and hide the bg of button and disable the button
     function toggleSendButton(loading = false) {
-        sendBtn.disabled = loading;
-        sendBtn.style.background = "#29a155";
-        sendBtn.style.border = "none";
-
-        const icon = sendBtn.querySelector("i");
-        const loader = document.getElementById("send-loader");
+        sendBtn.style.background = loading ? "#dc2626" : "#29a155";
+        sendBtn.disabled = false;
 
         if (loading) {
-            icon.classList.add("hidden");
-            loader.classList.remove("hidden");
-
-            sendBtn.style.background = "transparent";
-        } else {
-            icon.classList.remove("hidden");
+            isStreaming = true;
+            sendIcon.classList.add("hidden");
+            stopIcon.classList.remove("hidden");
             loader.classList.add("hidden");
-
+            stopIcon.style.display = "flex";
+        } else {
+            isStreaming = false;
+            sendIcon.classList.remove("hidden");
+            stopIcon.classList.add("hidden");
+            stopIcon.style.display = "none";
+            loader.classList.add("hidden");
         }
     }
 
