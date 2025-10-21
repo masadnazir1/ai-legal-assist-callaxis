@@ -48,3 +48,7 @@ Assistant can make mistakes. Check important info." | Reason: Your message does 
 2025-10-21T16:05:36.261Z | Query: "docker build -t car-booking-backend:latest ." | Reason: Your message seems to be related to a technical command for building a Docker image, which is not related to legal matters.
 2025-10-21T16:35:43.812Z | Query: "which backend whould be best spring with Kotlin or node js express" | Reason: Your message is asking for technical advice regarding backend frameworks, which is not related to legal matters.
 2025-10-21T18:46:08.454Z | Query: "🌐" | Reason: The message does not contain any legal terms or references and appears to be an emoji without context.
+2025-10-21T19:25:12.011Z | Query: "yar agar urdu ma yah roman urdu ma koi sawal kro to jawab da gah?/" | Reason: Your message seems to be asking about language preferences for questions, which is not related to legal matters.
+2025-10-21T19:25:17.516Z | Query: "yar agar urdu ma yah roman urdu ma koi sawal kro to jawab da gah?/" | Reason: Your message is asking about language preferences for questions, which is not related to legal matters.
+2025-10-21T19:25:25.408Z | Query: "yar agar urdu ma yah roman urdu ma koi sawal kro to jawab da gah?/" | Reason: Your message is asking about the language preference for questions, which is not related to legal matters.
+2025-10-21T19:29:40.694Z | Query: "⛔ Stream stopped by user." | Reason: Your message does not relate to any legal matters or inquiries.
