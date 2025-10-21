@@ -1,8 +1,8 @@
 <?php
-ob_start();
+// ob_start();
 // Dashboard (SECURE VERSION) - JWT Protected
 
-require_once __DIR__ . '/../jwt/jwt-session.php';
+// require_once __DIR__ . '/../jwt/jwt-session.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -61,6 +61,29 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         /* for IE/Edge */
     }
 
+    /* root-main-container */
+    .root-main-container {
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        /*width: 500px;*/
+        display: none;
+        background-color: #0f172a;
+        color: #f8fafc;
+        padding: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    /* Hidden sidebar */
+    .sidebar.hidden {
+        transform: translateX(-100%);
+    }
+
+
     /* Optional: to ensure content is still scrollable */
     .message-container-ai-chat-app-page {
         overflow-y: auto;
@@ -80,6 +103,7 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         display: flex;
         height: 100vh;
         flex-direction: column;
+        width: 100%;
     }
 
     .chat-head {
@@ -102,7 +126,7 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
     }
 
     .user-message-bubble {
-        background: linear-gradient(90deg, rgba(99, 241, 139, 0.2) 0%, rgba(99, 241, 175, 0.4) 100%);
+        background: linear-gradient(90deg, rgb(75 255 126 / 20%) 0%, rgb(11 255 79 / 36%) 100%);
         color: #e2e8f0;
         border-top-left-radius: 15px;
         border-bottom-right-radius: 15px;
@@ -123,7 +147,7 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         border-top-right-radius: 15px;
         padding: 1rem 1rem 3rem;
         margin-bottom: 1rem;
-        border: 1px solid rgba(72, 236, 86, 0.3);
+        border: 1px solid rgb(7 255 29 / 32%);
         width: fit-content;
         position: relative;
 
@@ -155,6 +179,12 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         font-weight: 600;
         margin-top: 1rem;
         margin-bottom: 0.5rem;
+    }
+
+    .ai-message-bubble h2 {
+        color: #ffdc14ff;
+        font-weight: bold;
+        margin-bottom: 1rem;
     }
 
     .ai-message-bubble em {
@@ -198,6 +228,8 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         display: flex;
         gap: 6px;
         align-items: center;
+        position: relative;
+        top: 4px;
     }
 
     .typing-indicator-container .dots span {
@@ -230,14 +262,15 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
     }
 
     .shimmer-text {
-        font-family: "Montserrat", sans-serif;
-        font-weight: 600;
-        text-transform: uppercase;
-        background: linear-gradient(135deg, #ffffff, #554f4fff, #ffffff);
+        font-weight: 500;
+        background: linear-gradient(135deg, #d7ffd7, #a9ffbd, #71fa4e);
         background-clip: text;
         color: transparent;
         background-size: 200% 100%;
         animation: shimmer 1s linear infinite;
+        display: flex;
+        align-items: baseline;
+        gap: 5px;
     }
 
     @keyframes shimmer {
@@ -265,6 +298,7 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         max-width: 90%;
         margin: auto;
         padding: 8px 16px;
+        border: 1px solid rgb(255 255 255 / 28%);
         position: relative;
     }
 
@@ -282,7 +316,24 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         line-height: 1.5;
         overflow-y: hidden;
         scrollbar-width: none;
-        /* Firefox */
+        height: 20px;
+    }
+
+
+    .message-box {
+        width: calc(100% - 50px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+    }
+
+
+    .button-box {
+        width: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: end;
     }
 
     .chat-input-form textarea::-webkit-scrollbar {
@@ -305,15 +356,13 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         background: #29a155;
         border-radius: 100px;
         width: 45px;
-        height: 40px;
+        height: 45px;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: background 0.3s;
         padding: 5px;
-        position: absolute;
-        bottom: 10px;
-        right: 10px;
+
     }
 
     .send-message-button-ai:hover {
@@ -377,39 +426,83 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         color: #94a3b8;
         line-height: 1.5;
     }
+
+    /*Beta styles here*/
+
+    .beta-tag-div {
+        position: relative;
+        display: flex;
+        gap: 5px;
+    }
+
+    .Beta {
+        background: #0eb34b;
+        border-radius: 200px;
+        font-weight: bold;
+        width: 50px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .toggle-sidebar-button {
+        display: none;
+    }
     </style>
 </head>
 
 <body>
-    <div class="main-container-ai-chat-app-page">
-        <div class="chat-head">
-            <span class="font-semibold text-lg">Intelligent AI Legal Assistant</span>
-            <div class="intelligent-indicator text-sm text-gray-400">
-                <i class="fas fa-brain mr-1 text-green-500"></i>AI Powered
+
+    <div class="root-main-container">
+
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar">
+            <h2>Sidebar</h2>
+            <p>Some content here</p>
+        </div>
+
+        <!-- Main chat area -->
+        <div id="chat-main" class="main-container-ai-chat-app-page">
+            <div class="chat-head">
+                <span class="beta-tag-div">
+                    <span class="font-semibold text-lg">Intelligent AI Legal Assistant</span>
+                    <p class="Beta">Beta</p>
+                </span>
+                <div class="intelligent-indicator text-sm text-gray-400">
+                    <!-- toggle button is fully working we ma require in feature -->
+                    <button id="toggle-sidebar" class="toggle-sidebar-button">Toggle Sidebar</button>
+                    <button onclick="cancelStream()">Cancel Stream</button>
+
+                    <i class="fas fa-brain mr-1 text-green-500"></i>
+                    AI Powered
+                </div>
+            </div>
+
+            <div id="message-container" class="message-container-ai-chat-app-page">
+
+
+
+
+            </div>
+
+            <div class="input-wrapper">
+                <form id="chat-form" autocomplete="off" class="chat-input-form">
+                    <div class="message-box">
+                        <textarea id="message-input" placeholder="Ask any legal question..."></textarea>
+                    </div>
+                    <div class="button-box">
+                        <button id="send-button" class="send-message-button-ai" type="submit">
+                            <i class="fas fa-paper-plane text-white"></i>
+                            <img id="send-loader" src="https://i.gifer.com/ZZ5H.gif" class="hidden w-10 h-10"
+                                alt="loading" />
+                        </button>
+                    </div>
+                </form>
+                <span class="warn">Assistant can make mistakes. Check important info.</span>
             </div>
         </div>
-
-        <div id="message-container" class="message-container-ai-chat-app-page">
-
-
-
-
-        </div>
-
-        <div class="input-wrapper">
-            <form id="chat-form" autocomplete="off" class="chat-input-form">
-                <!-- <input type="text" id="message-input" placeholder="Ask any legal question..." autocomplete="off" /> -->
-                <textarea id="message-input" placeholder="Ask any legal question..."></textarea>
-
-                <button id="send-button" class="send-message-button-ai" type="submit">
-                    <i class="fas fa-paper-plane text-white"></i>
-                    <img id="send-loader" src="https://i.gifer.com/ZZ5H.gif" class="hidden w-10 h-10" alt="loading" />
-                </button>
-            </form>
-            <span class="warn">Assistant can make mistakes. Check important info.</span>
-        </div>
     </div>
-
     <script>
     const chatBox = document.getElementById("message-container");
     const sendBtn = document.getElementById("send-button");
@@ -417,7 +510,29 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
     const chatForm = document.getElementById("chat-form");
     const textarea = document.querySelector(".chat-input-form textarea");
     const chatInputForm = document.querySelector(".chat-input-form");
+    const toggleBtn = document.getElementById("toggle-sidebar");
+    const sidebar = document.getElementById("sidebar");
 
+    //global controller
+    let controller;
+
+
+    //// user cancels
+    function cancelStream() {
+        if (controller) controller.abort();
+    }
+
+    toggleBtn.addEventListener("click", () => {
+        sidebar.classList.toggle("hidden");
+
+        // Optional: expand main chat to full width
+        const chatMain = document.getElementById("chat-main");
+        if (sidebar.classList.contains("hidden")) {
+            chatMain.style.width = "100%";
+        } else {
+            chatMain.style.width = "60%";
+        }
+    });
 
 
     //show a box when no message
@@ -449,12 +564,18 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
     showWelcomePlaceholder();
 
     textarea.addEventListener("input", () => {
-        textarea.style.height = "auto";
-        textarea.style.height = textarea.scrollHeight + "px";
+        textarea.style.height = "auto"; // always reset before measuring
+        const newHeight = textarea.scrollHeight;
+        const isMultiline = newHeight > 60; // detect multiline
 
-        const isMultiline = textarea.scrollHeight > 60; // adjust 60 to your base single-line height
+        textarea.style.height = isMultiline ? `${newHeight}px` : "20px";
         chatInputForm.style.borderRadius = isMultiline ? "20px" : "100px";
+        sendBtn.style.position = isMultiline ? "absolute" : "unset";
+        sendBtn.style.bottom = "10px";
+        sendBtn.style.right = "10px";
+        textarea.style.borderRadius = "8px";
     });
+
 
 
     //fun to show the loader and hide the bg of button and disable the button
@@ -514,10 +635,10 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         const indicator = document.createElement("div");
         indicator.className = "ai typing-indicator-container";
         indicator.innerHTML = `
-        <div class="dots">
+       
+        <div class="shimmer-text">Thinking  <div class="dots">
             <span></span><span></span><span></span>
-        </div>
-        <div class="shimmer-text">Processing your query…</div>
+        </div></div>
     `;
         chatBox.appendChild(indicator);
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -565,12 +686,17 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         hideWelcomePlaceholder();
         appendMessage(query, "user-message-bubble");
         userInput.value = "";
+        textarea.style.height = "20px"; // reset height
+        chatInputForm.style.borderRadius = "100px";
 
         toggleSendButton(true);
         const typing = showTypingIndicator();
 
+        controller = new AbortController(); // create abort controller
+
+
         try {
-            const response = await fetch("https://ai-test.galaxydev.pk/api/search/case", {
+            const response = await fetch("http://localhost:5000/api/search/case", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -578,6 +704,7 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
                 body: JSON.stringify({
                     query
                 }),
+                signal: controller.signal, // pass signal
             });
 
             removeTypingIndicator(typing);
@@ -642,7 +769,10 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         } catch (err) {
             console.error("Fetch error:", err);
             removeTypingIndicator(typing);
-            appendMessage("Network error or stream closed.", "ai-message-bubble");
+            if (err !== 'AbortError') {
+                appendMessage("Network error or stream closed.", "ai-message-bubble");
+
+            }
         } finally {
             toggleSendButton(false);
         }
@@ -652,7 +782,7 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
 
 </html>
 
-<?php
+<!-- <?php
 $page_content = ob_get_clean();
 require_once __DIR__ . '/includes/single-page-ai.php';
-?>
+?> -->

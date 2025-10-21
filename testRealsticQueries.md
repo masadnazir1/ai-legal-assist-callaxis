@@ -49,12 +49,3 @@ test_queries = """
 47. What are examples of cases decided under Article 184(3)?
 48. Explain how Pakistani courts view separation of powers doctrine.
 49. How has Mens Rea been interpreted by Pakistani courts?
-    """
-
-# Save to text file
-
-file_path = "/mnt/data/testRealsticQueries.txt"
-with open(file_path, "w") as f:
-f.write(test_queries)
-
-file_path

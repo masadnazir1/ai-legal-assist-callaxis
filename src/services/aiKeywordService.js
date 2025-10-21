@@ -1,27 +1,8 @@
 /**
  * generateSearchableKeyword
  * -------------------------
- * Uses OpenAI to extract precise legal keywords or citations from a user query
- * that can be used to search a legal case database like MeiliSearch.
- *
- * Features:
- * - Converts natural language queries into search-optimized keywords.
- * - Handles case names, citations (e.g., "PLD 2010 Federal Shariat Court 1"),
- *   and legal topics (e.g., "doctrine of necessity").
- * - Returns a concise, relevant keyword string suitable for database search.
- *
- * @param {string} userInput - The user's raw search query or question.
- *
- * @returns {Promise<string | undefined>}
- *   - Returns the refined keyword string.
- *   - If AI service fails or no keywords are generated, returns undefined.
- *
- * @example
- * const keyword = await generateSearchableKeyword("Doctrine of necessity in Pakistani law");
- * console.log(keyword); // Output: "necessity" or "doctrine of necessity"
- *
- * @throws {Error} Logs AI errors internally. No error is thrown to the caller,
- *                 function may return undefined on failure.
+ * Uses OpenAI to extract search-optimized legal keywords or citations
+ * and determine if case law search is required.
  */
 
 import OpenAI from "openai";
@@ -32,27 +13,44 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// --- AI-ENHANCED KEYWORD SERVICE ---
 export async function generateSearchableKeyword(userInput) {
   try {
-    // AI prompt for refinement
     const prompt = `
-You are a legal keyword extraction assistant specialized in Pakistani case law.
-Given a user query, return the most accurate search-ready keyword or case name
-that can be used to find relevant case laws in a database like MeiliSearch.
+You are an expert Pakistani legal query interpreter.
+Your task: 
+1. Decide if the user's query requires case law search (true/false).
+2. Extract one concise, search-optimized legal keyword string.
 
-Rules:
-- If a case name like "State vs Zia-ur-Rehman" is mentioned, return exactly that example ='State vs Zia-ur-Rehman'.
-- If a citation like "PLD 2010 Federal Shariat Court 1" appears, return it exactly so it should be retunres as ='PLD 2010 Federal' or 'PLD 2010'.
-- If it's a topic (e.g. doctrine of necessity, article 9), return the precise legal term. it sould be someting like 'necessity or doctrine or  article 9'
-- Do NOT include filler or extra words — only keywords that improve search relevance.
+Return output **only** in JSON with the exact structure:
+{
+  "search": true | false,
+  "keyword": "..."
+}
 
-User query: """${userInput}"""
+Rules for "search":
+- true if the query asks for precedents, judgments, PLD, SCMR, cases, or court rulings.
+- false if it only asks for general explanations, definitions, or statutes.
 
+Rules for "keyword":
+- Use legal citations, case titles, statutory references, or normalized doctrines.
+- No explanations or filler.
+- Always be specific but concise.
 
-Return only the refined keyword string, nothing else.
+Examples:
+Input: "what is doctrine of necessity in Pakistan"
+Output: {"search": true, "keyword": "doctrine of necessity"}
 
+Input: "define contract under Contract Act"
+Output: {"search": false, "keyword": "Contract Act 1872"}
 
+Input: "cases on Article 199"
+Output: {"search": true, "keyword": "Article 199 Constitution of Pakistan"}
+
+Input: "PLD 2020 SC 12"
+Output: {"search": true, "keyword": "PLD 2020 SC"}
+
+Now process this query:
+"""${userInput}"""
 `;
 
     const completion = await openai.chat.completions.create({
@@ -60,21 +58,38 @@ Return only the refined keyword string, nothing else.
       messages: [
         {
           role: "system",
-          content: "You extract precise legal keywords for search.",
+          content:
+            "You are a strict JSON-only responder for Pakistani legal queries. Never output text outside JSON.",
         },
         { role: "user", content: prompt },
       ],
-      temperature: 0.2,
+      temperature: 0,
       max_tokens: 50,
     });
 
-    const refined = completion.choices?.[0]?.message?.content?.trim();
+    const raw = completion.choices?.[0]?.message?.content?.trim();
 
-    //
-    console.log("refined", refined);
-    return refined;
+    // Safe parse
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = { search: false, keyword: raw || "" };
+    }
+
+    console.log(`
+====================================
+⚖️  LEGAL QUERY ANALYSIS
+------------------------------------
+Query:   ${userInput}
+Search:  ${parsed.search}
+Keyword: ${parsed.keyword}
+====================================
+`);
+
+    return parsed;
   } catch (err) {
     console.error("AI keyword service error:", err.message);
-    // fallback to rule-based
+    return { search: false, keyword: "" };
   }
 }

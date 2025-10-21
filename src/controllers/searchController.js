@@ -43,7 +43,11 @@ export const searchController = async (req, res) => {
 
   try {
     //filter the user query and proccess accordingly
+    console.time("Time taken by the filterResult");
+
     const filterResult = await filterUserQuery(query);
+
+    console.timeEnd("Time taken by the filterResult");
 
     if (!filterResult.allowed) {
       //log on the terminal as well
@@ -60,14 +64,23 @@ export const searchController = async (req, res) => {
     const caseSearchKeyword = await generateSearchableKeyword(query);
     console.timeEnd("KeywordGeneration");
 
+    console.log("KEYWORD SERVICE", caseSearchKeyword);
+
     //Search case laws
     console.time("CaseLawSearch");
-    const caselow = await searchCaselaws(caseSearchKeyword);
+
+    let caselow = null;
+
+    if (caseSearchKeyword.search) {
+      caselow = await searchCaselaws(caseSearchKeyword?.keyword);
+    }
+
     console.timeEnd("CaseLawSearch");
 
+    console.time("Time taken Generate AI response");
     //Generate AI response
     await generateAIResponse(query, caselow, res);
-
+    console.timeEnd("Time taken Generate AI response");
     //end operations here
   } catch (err) {
     console.error("Error getting the response:", err);
