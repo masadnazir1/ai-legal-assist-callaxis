@@ -72,7 +72,6 @@ export const generateAIResponse = async (
   try {
     const prompt = await proviedPrompt(userQuery, caselaws, caseIds);
 
-    console.log("prompt", prompt);
     // Detect client disconnect
 
     res.on("close", () => {
