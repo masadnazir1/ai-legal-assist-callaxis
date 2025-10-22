@@ -604,6 +604,7 @@
         if (loading) {
             isStreaming = true;
             sendIcon.classList.add("hidden");
+            sendIcon.style.display = "none";
             stopIcon.classList.remove("hidden");
             loader.classList.add("hidden");
             stopIcon.style.display = "flex";
