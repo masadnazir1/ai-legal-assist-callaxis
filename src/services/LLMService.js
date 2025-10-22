@@ -141,7 +141,7 @@ export const generateAIResponse = async (
       res.write(`data: Error: ${error.message}\n\n`);
       res.end();
     }
-    throw new Error("Failed to stream AI response");
+    throw new Error("Failed to stream AI response", error);
   } finally {
     delete activeControllers[streamId];
   }

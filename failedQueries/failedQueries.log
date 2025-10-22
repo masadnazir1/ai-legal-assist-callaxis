@@ -62,3 +62,4 @@ Assistant can make mistakes. Check important info." | Reason: Your message does 
 2025-10-21T22:46:51.971Z | Query: "d" | Reason: The message does not contain any legal content or context.
 2025-10-22T15:05:22.672Z | Query: "CLIENT_ID=your_client_id CLIENT_SECRET=your_client_secret REDIRECT_URI=http://localhost:3000/oauth2callback REFRESH_TOKEN=your_refresh_token # optional if you generate manually BLOG_ID=your_blogger_blog_id" | Reason: The message contains technical information related to OAuth2 and blogging, with no connection to legal topics.
 2025-10-22T15:05:55.730Z | Query: "what is OAuth2 stand for in legal?" | Reason: The message inquires about OAuth2, which is a technical standard and does not directly relate to legal topics in the context of Pakistani law.
+2025-10-22T15:43:45.358Z | Query: "How to make a cake?" | Reason: The message is about baking a cake and has no connection to legal topics or issues.
