@@ -63,3 +63,12 @@ Assistant can make mistakes. Check important info." | Reason: Your message does 
 2025-10-22T15:05:22.672Z | Query: "CLIENT_ID=your_client_id CLIENT_SECRET=your_client_secret REDIRECT_URI=http://localhost:3000/oauth2callback REFRESH_TOKEN=your_refresh_token # optional if you generate manually BLOG_ID=your_blogger_blog_id" | Reason: The message contains technical information related to OAuth2 and blogging, with no connection to legal topics.
 2025-10-22T15:05:55.730Z | Query: "what is OAuth2 stand for in legal?" | Reason: The message inquires about OAuth2, which is a technical standard and does not directly relate to legal topics in the context of Pakistani law.
 2025-10-22T15:43:45.358Z | Query: "How to make a cake?" | Reason: The message is about baking a cake and has no connection to legal topics or issues.
+2025-10-22T19:58:31.160Z | Query: "fff" | Reason: The message does not contain any legal content or context.
+2025-10-22T19:59:08.940Z | Query: "what is pld?" | Reason: The message does not reference any legal topics or issues; it appears to be a general inquiry.
+2025-10-22T20:02:33.153Z | Query: "what is pld" | Reason: The message does not provide any context related to legal topics or issues.
+2025-10-22T20:08:28.355Z | Query: "d" | Reason: The message does not contain any legal content or context.
+2025-10-22T20:16:45.933Z | Query: "dd" | Reason: The message does not contain any legal references or implications.
+2025-10-22T20:43:15.361Z | Query: "ddd" | Reason: The message does not contain any legal content or references.
+2025-10-22T21:45:28.965Z | Query: "ok" | Reason: The message 'ok' does not reference any legal topics or issues.
+2025-10-22T21:45:40.227Z | Query: "what is pld" | Reason: The message does not provide any context related to legal topics or issues.
+2025-10-22T22:04:37.751Z | Query: "what is pld" | Reason: The message does not provide any context related to legal topics or issues.

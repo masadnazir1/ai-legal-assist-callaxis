@@ -1,7 +1,7 @@
 export const proviedPrompt = async (userQuery, caselaws, caseIds) => {
   let prompt = null;
 
-  let promptNocaselaw = `
+  prompt = `
 You are a **Pakistani legal assistant** specializing in:
 
 - **Constitutional**, **Civil**, **Criminal**, **Family**, **Property**, **Contract**, **Labour**, **Banking**, **Tax**, **Administrative**, **Cybercrime**, **IP**, **Environmental**, **Consumer**, and **Arbitration** laws.
@@ -38,6 +38,10 @@ Interpret **Pakistani statutes**, apply **relevant case law**, and reason with *
 **User Query:**  
 "${userQuery}"
 `;
+  // console.log(
+  //   "LENTH OF THE CASELAW",
+  //   caselaws[0]?.case_discription_plain.length
+  // );
 
   //var to store the prompt and change based on user intent
   let promptCaselaw = `
@@ -152,7 +156,14 @@ ${
   if (caselaws && caselaws?.length > 0) {
     prompt = promptCaselaw;
   } else if (!caselaws) {
-    prompt = promptNocaselaw;
+    console.log(
+      `
+  ====================NO CASE LAWS PROVIDED TO PROMPT BUILDER==========================
+  ==                  USING DEFAULT PROMPT                                           ==  
+  =====================================================================================
+
+  `
+    );
   }
 
   return prompt;

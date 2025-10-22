@@ -70,8 +70,9 @@ export const generateAIResponse = async (
   }
 
   try {
-    const prompt = await proviedPrompt(userQuery, caselaws, caseIds);
+    let prompt = await proviedPrompt(userQuery, caselaws, caseIds);
 
+    console.log("PROMPT", " ", "prompt", prompt);
     // Detect client disconnect
 
     res.on("close", () => {
@@ -96,7 +97,6 @@ export const generateAIResponse = async (
       temperature: 0.4,
       max_tokens: 1600,
       stream: true,
-      // signal: controller.signal,
     });
 
     if (!res) {
@@ -146,12 +146,3 @@ export const generateAIResponse = async (
     delete activeControllers[streamId];
   }
 };
-
-export function abortStream(req, res) {
-  const { id } = req.body;
-  const controller = activeControllers[id];
-  if (!controller) return res.status(404).json({ success: false });
-  controller.abort();
-  delete activeControllers[id];
-  res.json({ success: true });
-}

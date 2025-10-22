@@ -1,8 +1,8 @@
 <?php
-// ob_start();
+ob_start();
 // Dashboard (SECURE VERSION) - JWT Protected
 
-// require_once __DIR__ . '/../jwt/jwt-session.php';
+require_once __DIR__ . '/../jwt/jwt-session.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -59,12 +59,13 @@
         /* hides scrollbar */
         -ms-overflow-style: none;
         /* for IE/Edge */
+        background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
     }
 
     /* root-main-container */
     .root-main-container {
         display: flex;
-        height: 100vh;
+
         overflow: hidden;
     }
 
@@ -101,9 +102,10 @@
 
     .main-container-ai-chat-app-page {
         display: flex;
-        height: 100vh;
+        height: 92vh;
         flex-direction: column;
         width: 100%;
+        height: ;
     }
 
     .chat-head {
@@ -113,6 +115,7 @@
         padding: 15px;
         border-bottom: 1px solid #1e293b;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+        background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
     }
 
     .message-container-ai-chat-app-page {
@@ -155,44 +158,119 @@
 
     .ai-message-bubble p {
         margin-bottom: 1rem;
+        font-size: 14px;
     }
-
 
     .ai-message-bubble ol {
         list-style-type: decimal;
         padding-left: 1.2rem;
         margin: 0 0 1rem 0;
+        font-size: 14px;
     }
 
-
+    .ai-message-bubble ul {
+        list-style-type: disc;
+        padding-left: 1.2rem;
+        margin: 0 0 1rem 0;
+        font-size: 14px;
+    }
 
     .ai-message-bubble li {
         margin-bottom: 1rem;
+        font-size: 14px;
     }
-
-
-
-
 
     .ai-message-bubble strong {
         color: #16ff97;
-        font-weight: 600;
+        font-weight: 400;
         margin-top: 1rem;
         margin-bottom: 0.5rem;
+        font-size: 14px;
+    }
+
+    .ai-message-bubble h1 {
+        color: #ffdc14ff;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        font-size: 14px;
     }
 
     .ai-message-bubble h2 {
         color: #ffdc14ff;
-        font-weight: bold;
+        font-weight: 400;
         margin-bottom: 1rem;
+        font-size: 14px;
+    }
+
+    .ai-message-bubble h3 {
+        color: #ffdc14ff;
+        font-weight: 400;
+        margin-bottom: 1rem;
+        font-size: 14px;
+    }
+
+    .ai-message-bubble h4 {
+        color: #ffdc14ff;
+        font-weight: 400;
+        margin-bottom: 1rem;
+        font-size: 14px;
+    }
+
+    .ai-message-bubble h5 {
+        color: #ffdc14ff;
+        font-weight: 400;
+        margin-bottom: 1rem;
+        font-size: 14px;
+    }
+
+    .ai-message-bubble h6 {
+        color: #ffdc14ff;
+        font-weight: 400;
+        margin-bottom: 1rem;
+        font-size: 14px;
     }
 
     .ai-message-bubble em {
         color: #fff309;
-
         margin-bottom: 0.5rem;
+        font-size: 14px;
     }
 
+    .ai-message-bubble code {
+        font-size: 14px;
+        padding: 2px 4px;
+        border-radius: 3px;
+    }
+
+    .ai-message-bubble pre {
+        font-size: 14px;
+        padding: 1rem;
+        border-radius: 5px;
+        overflow-x: auto;
+    }
+
+    .ai-message-bubble blockquote {
+        font-size: 14px;
+        border-left: 4px solid #22C55E;
+        padding-left: 1rem;
+        margin: 1rem 0;
+        font-style: italic;
+    }
+
+    .ai-message-bubble table {
+        font-size: 14px;
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+
+    .ai-message-bubble th,
+    .ai-message-bubble td {
+        font-size: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 8px 12px;
+        text-align: left;
+    }
 
     .ai-message-bubble a {
         color: #22C55E;
@@ -285,9 +363,10 @@
 
 
     .input-wrapper {
-        position: relative;
         /* padding: 1rem 0; */
         text-align: center;
+        background: linear-gradient(11deg, #0f172a 0%, #020617 100%);
+        padding-bottom: 1.5%;
     }
 
     .chat-input-form {
@@ -297,7 +376,7 @@
         border-radius: 100px;
         max-width: 90%;
         margin: auto;
-        padding: 8px 16px;
+        padding: 10px;
         border: 1px solid rgb(255 255 255 / 28%);
         position: relative;
     }
@@ -353,7 +432,7 @@
 
 
     .send-message-button-ai {
-        background: #29a155;
+        background: #0EB34B;
         border-radius: 100px;
         width: 45px;
         height: 45px;
@@ -393,6 +472,20 @@
     }
 
 
+    .new-chat-button {
+
+        padding: 5px;
+        border-radius: 100px;
+        background: #0EB34B;
+        width: 40px;
+        height: 40px;
+    }
+
+    .new-chat-button img {
+        filter: invert(1);
+    }
+
+
     /*welcome-placeholder styles*/
     .welcome-placeholder {
         display: flex;
@@ -412,11 +505,37 @@
         background: #22c55e;
         box-shadow: 0 0 40px #22c55e;
         margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .welcome-placeholder h2 {
-        font-size: 1.25rem;
+        font-size: 1.25rem !important;
         font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .welcome-placeholder h4 {
+        font-size: 1rem !important;
+        font-weight: 400;
+        margin-bottom: 10px;
+
+    }
+
+    .welcome-placeholder h3 {
+        font-size: 1rem !important;
+        font-weight: 400;
+        margin-bottom: 10px;
+
+    }
+
+    .welcome-placeholder code,
+    kbd,
+    pre,
+    samp {
+        font-size: 1rem !important;
+        font-weight: 400;
         margin-bottom: 10px;
     }
 
@@ -454,6 +573,41 @@
     .fa-stop {
         display: none;
     }
+
+
+
+    @media (max-width: 600px) {
+
+        /* CSS rules for screens smaller than 600px */
+        .chat-input-form {
+            padding: 5px 10px;
+        }
+
+        .send-message-button-ai {
+            width: 40px;
+            height: 40px;
+
+
+
+        }
+
+        .message-box {
+
+            padding: 15px;
+        }
+
+        .Beta {
+            padding: 0px;
+            font-size: 13px;
+            width: 50px;
+            border-radius: 20px
+        }
+
+        .input-wrapper {
+            padding-bottom: 15%;
+        }
+
+    }
     </style>
 </head>
 
@@ -471,15 +625,18 @@
         <div id="chat-main" class="main-container-ai-chat-app-page">
             <div class="chat-head">
                 <span class="beta-tag-div">
-                    <span class="font-semibold text-lg">Intelligent AI Legal Assistant</span>
+                    <span class="font-semibold text-lg">Legal AI Assistant</span>
                     <p class="Beta">Beta</p>
                 </span>
                 <div class="intelligent-indicator text-sm text-gray-400">
                     <!-- toggle button is fully working we ma require in feature -->
                     <button id="toggle-sidebar" class="toggle-sidebar-button">Toggle Sidebar</button>
+                    <button id="new-chat" class="new-chat-button">
 
-                    <i class="fas fa-brain mr-1 text-green-500"></i>
-                    AI Powered
+                        <img src="https://cdn-icons-png.flaticon.com/128/5410/5410417.png" alt="new chat" />
+                    </button>
+
+
                 </div>
             </div>
 
@@ -500,12 +657,11 @@
                             <i class="fas fa-paper-plane text-white"></i>
                             <i class="fas fa-stop text-white"></i>
 
-                            <img id="send-loader" src="https://i.gifer.com/ZZ5H.gif" class="hidden w-10 h-10"
-                                alt="loading" />
+
                         </button>
                     </div>
                 </form>
-                <span class="warn">Assistant can make mistakes. Check important info.</span>
+                <span class="warn">Get quick answers — just type and send.</span>
             </div>
         </div>
     </div>
@@ -518,16 +674,42 @@
     const chatInputForm = document.querySelector(".chat-input-form");
     const toggleBtn = document.getElementById("toggle-sidebar");
     const sidebar = document.getElementById("sidebar");
-
+    const newChatButton = document.getElementById("new-chat");
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
     //
     const sendIcon = sendBtn.querySelector(".fa-paper-plane");
     const stopIcon = sendBtn.querySelector(".fa-stop");
-    const loader = document.getElementById("send-loader");
+
     //global controller
     let controller;
     //
     let isStreaming = false;
+
+
+    newChatButton.addEventListener("click", () => {
+        // Cancel any running stream
+        if (controller) controller.abort();
+
+        // Clear all chat bubbles
+        chatBox.innerHTML = "";
+
+        // Reset input state
+        userInput.value = "";
+        textarea.style.height = "20px";
+        chatInputForm.style.borderRadius = "100px";
+        sendBtn.style.position = "unset";
+        isStreaming = false;
+
+        // Restore send icon state
+        sendIcon.classList.remove("hidden");
+        stopIcon.classList.add("hidden");
+        sendBtn.style.background = "#29a155";
+
+        // Show welcome placeholder again
+        showWelcomePlaceholder();
+    });
+
 
 
     //// user cancels
@@ -556,7 +738,9 @@
         const welcome = document.createElement("div");
         welcome.className = "welcome-placeholder";
         welcome.innerHTML = `
-        <div class="welcome-dot"></div>
+        <div class="welcome-dot">
+          <i class="fa-solid fa-gavel text-5xl text-white"></i>
+        </div>
         <h2>Welcome to AI Legal Assistant</h2>
         <p>
             Ask any legal question about Pakistani Law. I'm here to provide comprehensive guidance
@@ -576,18 +760,34 @@
     // on load
     showWelcomePlaceholder();
 
-    textarea.addEventListener("input", () => {
-        textarea.style.height = "auto"; // always reset before measuring
+    const handleResize = () => {
+        textarea.style.height = "auto"; // reset height before measuring
         const newHeight = textarea.scrollHeight;
-        const isMultiline = newHeight > 60; // detect multiline
+        const isMultiline = newHeight > 35; // detect multiline after 2nd line
 
-        textarea.style.height = isMultiline ? `${newHeight}px` : "20px";
-        chatInputForm.style.borderRadius = isMultiline ? "20px" : "100px";
+        // Adjust height dynamically
+        textarea.style.height = isMultiline ? `${newHeight}px` : "30px";
+
+        // Style changes for multiline / single-line
+        chatInputForm.style.borderRadius = isMultiline ? "10px" : "100px";
         sendBtn.style.position = isMultiline ? "absolute" : "unset";
         sendBtn.style.bottom = "10px";
         sendBtn.style.right = "10px";
         textarea.style.borderRadius = "8px";
-    });
+
+        // Reset to default if empty
+        if (!textarea.value.trim()) {
+            textarea.style.height = "20px";
+            chatInputForm.style.borderRadius = "100px";
+            sendBtn.style.position = "unset";
+        }
+    };
+
+    // Attach for input, paste, and cut (use timeout for paste/cut)
+    ["input", "paste", "cut"].forEach(event =>
+        textarea.addEventListener(event, () => setTimeout(handleResize, 0))
+    );
+
 
     sendBtn.addEventListener("click", () => {
         if (isStreaming && controller) {
@@ -604,16 +804,15 @@
         if (loading) {
             isStreaming = true;
             sendIcon.classList.add("hidden");
-            sendIcon.style.display = "none";
             stopIcon.classList.remove("hidden");
-            loader.classList.add("hidden");
             stopIcon.style.display = "flex";
+            sendIcon.style.display = "none";
         } else {
             isStreaming = false;
             sendIcon.classList.remove("hidden");
             stopIcon.classList.add("hidden");
             stopIcon.style.display = "none";
-            loader.classList.add("hidden");
+            sendIcon.style.display = "flex";
         }
     }
 
@@ -687,8 +886,11 @@
     }
     userInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
-            console.log("OK its here")
+
             e.preventDefault();
+            // your send logic here
+            if (isMobile) userInput.blur(); // hide keyboard only on mobile
+
             processRequest();
         }
     });
@@ -696,7 +898,20 @@
     chatForm.addEventListener("submit", (e) => {
         e.preventDefault();
         processRequest();
+        // your send logic here
+        if (isMobile) userInput.blur(); // hide keyboard only on mobile
+
+
+
+
     });
+    chatForm.addEventListener("click", () => {
+
+        userInput.focus()
+    });
+
+
+
 
     async function processRequest() {
         const query = userInput.value.trim();
@@ -714,7 +929,9 @@
 
 
         try {
-            const response = await fetch("http://localhost:5000/api/search/case", {
+            const API_URL = "https://api-ai.pakistanlawhelp.com"
+
+            const response = await fetch(`${API_URL}/api/search/case`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -801,7 +1018,7 @@
 
 </html>
 
-<!-- <?php
+<?php
 $page_content = ob_get_clean();
 require_once __DIR__ . '/includes/single-page-ai.php';
-?> -->
+?>
