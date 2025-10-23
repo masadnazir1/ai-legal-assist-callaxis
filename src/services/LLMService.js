@@ -48,8 +48,12 @@ const openai = new OpenAI({
 
 const activeControllers = {};
 
+//memory store to save the user histroy for contextual streaming
+const chatSessions = new Map(); // { userId: [ { role, content }, ... ] }
+
 // Stream AI response via Express
 export const generateAIResponse = async (
+  userId,
   userQuery,
   caselaws = [],
   res = null
@@ -69,12 +73,32 @@ export const generateAIResponse = async (
     logger.warn("No caselaws provided to AI service");
   }
 
+  //
+  let caseTexts = [];
+  if (Array.isArray(caselaws) && caselaws.length > 0) {
+    caseTexts = caselaws
+      .slice(0, 5)
+      .map((c) => c.case_discription_plain.split("\n")[0]);
+  }
+
+  //some functions to handle the features
+
+  function getChatHistory(userId) {
+    if (!chatSessions.has(userId)) chatSessions.set(userId, []);
+    return chatSessions.get(userId);
+  }
+
+  function saveChatHistory(userId, history) {
+    if (history.length > 20) history.splice(0, history.length - 20);
+    chatSessions.set(userId, history);
+  }
+
+  const history = getChatHistory(userId);
+
   try {
     let prompt = await proviedPrompt(userQuery, caselaws, caseIds);
 
-    console.log("PROMPT", " ", "prompt", prompt);
     // Detect client disconnect
-
     res.on("close", () => {
       if (activeControllers[streamId]) {
         controller.abort();
@@ -83,22 +107,26 @@ export const generateAIResponse = async (
       }
     });
 
+    const messages = [
+      {
+        role: "system",
+        content:
+          "You are a professional Pakistani legal assistant. Respond only with factual and case-supported legal explanations.",
+      },
+      ...history,
+      { role: "user", content: prompt },
+    ];
+
     // Stream completion
     const stream = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a professional Pakistani legal assistant. Respond only with factual and case-supported legal explanations.",
-        },
-        { role: "user", content: prompt },
-      ],
+      messages,
       temperature: 0.4,
       max_tokens: 1600,
       stream: true,
     });
 
+    // Non-streaming
     if (!res) {
       // If not streaming via Express, return as string
       let fullText = "";
@@ -131,7 +159,14 @@ export const generateAIResponse = async (
     res.write(`data: [DONE]\n\n`);
     res.end();
 
-    logger.info("Stream completed successfully");
+    const assistantReply = fullText.trim();
+
+    // Store conversation for context
+    history.push({ role: "user", content: prompt });
+    history.push({ role: "assistant", content: assistantReply });
+    saveChatHistory(userId, history);
+
+    logger.info(`Stream completed successfully for user: ${userId}`);
     return;
   } catch (error) {
     if (error.name === "AbortError") console.log("Stream aborted:", streamId);

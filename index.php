@@ -1,8 +1,8 @@
 <?php
-ob_start();
+// ob_start();
 // Dashboard (SECURE VERSION) - JWT Protected
 
-require_once __DIR__ . '/../jwt/jwt-session.php';
+// require_once __DIR__ . '/../jwt/jwt-session.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -396,6 +396,7 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         overflow-y: hidden;
         scrollbar-width: none;
         height: 20px;
+        max-height: 200px;
     }
 
 
@@ -676,8 +677,6 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
     const sidebar = document.getElementById("sidebar");
     const newChatButton = document.getElementById("new-chat");
     const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-    //
     const sendIcon = sendBtn.querySelector(".fa-paper-plane");
     const stopIcon = sendBtn.querySelector(".fa-stop");
 
@@ -686,8 +685,41 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
     //
     let isStreaming = false;
 
+    // --- PREFILLED INPUT  ---
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const savedQuery = localStorage.getItem("prefilledQuery");
+
+        if (savedQuery) {
+            textarea.value = savedQuery;
+            textarea.dispatchEvent(new Event("input"));
+            localStorage.removeItem("prefilledQuery")
+        }
+    });
+
+
+
+    // --- SESSION MANAGEMENT ---
+
+    function generateSessionId() {
+        return 'sess_id' + crypto.randomUUID();
+    }
+
+
+    // Load or create session
+    function getSessionId() {
+        let sid = sessionStorage.getItem("session_id");
+        if (!sid) {
+            sid = generateSessionId();
+            sessionStorage.setItem("session_id", sid);
+        }
+        return sid;
+    }
+
+
 
     newChatButton.addEventListener("click", () => {
+        sessionStorage.setItem("session_id", generateSessionId());
         // Cancel any running stream
         if (controller) controller.abort();
 
@@ -929,7 +961,7 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
 
 
         try {
-            const API_URL = "https://api-ai.pakistanlawhelp.com"
+            const API_URL = "http://localhost:5000"
 
             const response = await fetch(`${API_URL}/api/search/case`, {
                 method: "POST",
@@ -937,7 +969,8 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    query
+                    query: query,
+                    session_id: getSessionId()
                 }),
                 signal: controller.signal, // pass signal
             });
@@ -1017,8 +1050,8 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
 </body>
 
 </html>
-
+<!-- 
 <?php
 $page_content = ob_get_clean();
 require_once __DIR__ . '/includes/single-page-ai.php';
-?>
+?> -->

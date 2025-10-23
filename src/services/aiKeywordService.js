@@ -1,10 +1,3 @@
-/**
- * generateSearchableKeyword
- * -------------------------
- * Uses OpenAI to extract search-optimized legal keywords or citations
- * and determine if case law search is required.
- */
-
 import OpenAI from "openai";
 import dotenv from "dotenv";
 dotenv.config();
@@ -17,39 +10,40 @@ export async function generateSearchableKeyword(userInput) {
   try {
     const prompt = `
 You are an expert Pakistani legal query interpreter.
-Your task: 
-1. Decide if the user's query requires case law search (true/false).
-2. Extract one concise, search-optimized legal keyword string.
+Decide two things:
+1. Whether the current query requires **case law search**.
+2. Extract a concise, search-optimized legal keyword string.
 
-Return output **only** in JSON with the exact structure:
+Return JSON only:
 {
   "search": true | false,
   "keyword": "..."
 }
 
 Rules for "search":
-- true if the query asks for precedents, judgments, PLD, SCMR, cases, or court rulings.
-- false if it only asks for general explanations, definitions, or statutes.
+- true → when the user **directly requests case laws, judgments, citations, or precedents** (mentions like PLD, SCMR, YLR, etc.)
+- false → when the user is **asking a follow-up question** about a previously mentioned case (e.g., "who were the judges", "what was the ratio", "explain above case", "continue previous one").
+- false → for general explanations, definitions, or statutory interpretation without case references.
 
 Rules for "keyword":
-- Use legal citations, case titles, statutory references, or normalized doctrines.
-- No explanations or filler.
-- Always be specific but concise.
+- Use concise legal citation or normalized doctrine if applicable.
+- Otherwise return minimal clean phrase summarizing legal intent.
+- Never repeat full query text.
 
 Examples:
-Input: "what is doctrine of necessity in Pakistan"
-Output: {"search": true, "keyword": "doctrine of necessity"}
+Input: "Summarize PLD 2000 FSC 1 about Zakat and Ushr laws."
+Output: {"search": true, "keyword": "PLD 2000 FSC 1"}
 
-Input: "define contract under Contract Act"
-Output: {"search": false, "keyword": "Contract Act 1872"}
+Input: "mention the judges and lawyers name in the above PLD"
+Output: {"search": false, "keyword": ""}
 
 Input: "cases on Article 199"
 Output: {"search": true, "keyword": "Article 199 Constitution of Pakistan"}
 
-Input: "PLD 2020 SC 12"
-Output: {"search": true, "keyword": "PLD 2020 SC"}
+Input: "explain ratio decidendi of the previous case"
+Output: {"search": false, "keyword": ""}
 
-Now process this query:
+Now process:
 """${userInput}"""
 `;
 
@@ -59,22 +53,25 @@ Now process this query:
         {
           role: "system",
           content:
-            "You are a strict JSON-only responder for Pakistani legal queries. Never output text outside JSON.",
+            "Respond strictly in JSON with 'search' and 'keyword' keys only.",
         },
         { role: "user", content: prompt },
       ],
       temperature: 0,
-      max_tokens: 50,
+      max_tokens: 60,
     });
 
     const raw = completion.choices?.[0]?.message?.content?.trim();
-
-    // Safe parse
     let parsed;
     try {
       parsed = JSON.parse(raw);
     } catch {
-      parsed = { search: false, keyword: raw || "" };
+      parsed = { search: false, keyword: "" };
+    }
+
+    // additional safeguard — no PLD in input => never search
+    if (!/\b(PLD|SCMR|YLR|MLD|CLC|PCR|PCrLJ)\b/i.test(userInput)) {
+      parsed.search = false;
     }
 
     console.log(`

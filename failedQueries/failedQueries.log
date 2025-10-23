@@ -72,3 +72,4 @@ Assistant can make mistakes. Check important info." | Reason: Your message does 
 2025-10-22T21:45:28.965Z | Query: "ok" | Reason: The message 'ok' does not reference any legal topics or issues.
 2025-10-22T21:45:40.227Z | Query: "what is pld" | Reason: The message does not provide any context related to legal topics or issues.
 2025-10-22T22:04:37.751Z | Query: "what is pld" | Reason: The message does not provide any context related to legal topics or issues.
+2025-10-22T22:54:08.246Z | Query: "what are you doing now?" | Reason: The message does not reference any legal topics or issues.

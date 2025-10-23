@@ -39,9 +39,16 @@ import { logFailedQuery } from "../Utils/logFailedQuery.js";
 import { logger } from "../Utils/logger.js";
 
 export const searchController = async (req, res) => {
-  const { query } = req.body;
+  const { query, session_id } = req.body;
 
   try {
+    if ((!query, !session_id)) {
+      return res.status(400).json({
+        success: false,
+        status: 400,
+        message: "query or session_id is missings ",
+      });
+    }
     //filter the user query and proccess accordingly
     console.time("Time taken by the filterResult");
 
@@ -49,15 +56,15 @@ export const searchController = async (req, res) => {
 
     console.timeEnd("Time taken by the filterResult");
 
-    if (!filterResult.allowed) {
-      //log on the terminal as well
-      logger.error("Query rejected:");
-      logFailedQuery(query, filterResult.reason);
-      return res.status(401).json({
-        success: false,
-        message: filterResult.reason,
-      });
-    }
+    // if (!filterResult.allowed) {
+    //   //log on the terminal as well
+    //   logger.error("Query rejected:");
+    //   logFailedQuery(query, filterResult.reason);
+    //   return res.status(401).json({
+    //     success: false,
+    //     message: filterResult.reason,
+    //   });
+    // }
 
     //Generate search keywords
     console.time("KeywordGeneration");
@@ -79,7 +86,7 @@ export const searchController = async (req, res) => {
 
     console.time("Time taken Generate AI response");
     //Generate AI response
-    await generateAIResponse(query, caselow, res);
+    await generateAIResponse(session_id, query, caselow, res);
     console.timeEnd("Time taken Generate AI response");
     //end operations here
   } catch (err) {
