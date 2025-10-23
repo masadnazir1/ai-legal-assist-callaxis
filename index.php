@@ -363,7 +363,6 @@
 
 
     .input-wrapper {
-        /* padding: 1rem 0; */
         text-align: center;
         background: linear-gradient(11deg, #0f172a 0%, #020617 100%);
         padding-bottom: 1.5%;
@@ -379,6 +378,7 @@
         padding: 10px;
         border: 1px solid rgb(255 255 255 / 28%);
         position: relative;
+        border-radius: 15px;
     }
 
 
