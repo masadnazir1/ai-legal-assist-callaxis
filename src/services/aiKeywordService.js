@@ -43,6 +43,14 @@ Output: {"search": true, "keyword": "Article 199 Constitution of Pakistan"}
 Input: "explain ratio decidendi of the previous case"
 Output: {"search": false, "keyword": ""}
 
+Input: "can you find the exact case withe id and make summery for me Case Reference – 3837"
+Output: {"search": true, "keyword": "3837"}
+
+Input: "Who were the judges in PLD 2010 Federal Shariat Court 1"
+Output: {"search": true, "keyword": "PLD 2010 Federal Shariat"}
+
+
+
 Now process:
 """${userInput}"""
 `;

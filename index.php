@@ -397,6 +397,7 @@
         scrollbar-width: none;
         height: 20px;
         max-height: 200px;
+        padding: 0px 10px;
     }
 
 
@@ -825,7 +826,6 @@
         if (isStreaming && controller) {
             controller.abort();
             toggleSendButton(false);
-            appendMessage("Stream stopped by user.", "ai-message-bubble");
         }
     });
 
@@ -1050,8 +1050,8 @@
 </body>
 
 </html>
-<!-- 
-<?php
+
+<!-- <?php
 $page_content = ob_get_clean();
 require_once __DIR__ . '/includes/single-page-ai.php';
 ?> -->

@@ -52,7 +52,7 @@ export const searchController = async (req, res) => {
     //filter the user query and proccess accordingly
     console.time("Time taken by the filterResult");
 
-    const filterResult = await filterUserQuery(query);
+    // const filterResult = await filterUserQuery(query);
 
     console.timeEnd("Time taken by the filterResult");
 

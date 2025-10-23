@@ -38,10 +38,6 @@ Interpret **Pakistani statutes**, apply **relevant case law**, and reason with *
 **User Query:**  
 "${userQuery}"
 `;
-  // console.log(
-  //   "LENTH OF THE CASELAW",
-  //   caselaws[0]?.case_discription_plain.length
-  // );
 
   //var to store the prompt and change based on user intent
   let promptCaselaw = `
@@ -110,11 +106,13 @@ ${
   caselaws?.length
     ? `Candidate caselaws:\n${caselaws
         .slice(0, 3)
-        .map((c, i) =>
-          c.case_discription_plain
-            ? `**Case ${i + 1}:** ${c.case_discription_plain}`
-            : null
-        )
+        .map((c, i) => {
+          if (!c.case_discription_plain) return null;
+          const desc = c.case_discription_plain.trim();
+          const half = Math.ceil(desc.length / 2);
+          const truncated = desc.slice(0, half);
+          return `**Case ${i + 1}:** ${truncated}`;
+        })
         .filter(Boolean)
         .join("\n\n")}`
     : "No caselaws found, rely on general legal understanding."
