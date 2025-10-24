@@ -12,3 +12,9 @@ node_modules
 twoPages.zip
 ./twoPages.zip
 .twoPages.zip
+
+
+failedQueries
+.failedQueries
+./failedQueries
+/failedQueries
