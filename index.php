@@ -1,8 +1,8 @@
 <?php
-// ob_start();
+ob_start();
 // Dashboard (SECURE VERSION) - JWT Protected
 
-// require_once __DIR__ . '/../jwt/jwt-session.php';
+require_once __DIR__ . '/../jwt/jwt-session.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -372,7 +372,6 @@
         display: flex;
         align-items: center;
         background: #000;
-        border-radius: 100px;
         max-width: 90%;
         margin: auto;
         padding: 10px;
@@ -952,7 +951,7 @@
         appendMessage(query, "user-message-bubble");
         userInput.value = "";
         textarea.style.height = "20px"; // reset height
-        chatInputForm.style.borderRadius = "100px";
+        chatInputForm.style.borderRadius = "15px";
 
         toggleSendButton(true);
         const typing = showTypingIndicator();
@@ -1051,7 +1050,7 @@
 
 </html>
 
-<!-- <?php
+<?php
 $page_content = ob_get_clean();
 require_once __DIR__ . '/includes/single-page-ai.php';
-?> -->
+?>

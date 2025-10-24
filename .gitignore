@@ -8,3 +8,7 @@ node_modules
 /node_modules
 
 .env
+
+twoPages.zip
+./twoPages.zip
+.twoPages.zip

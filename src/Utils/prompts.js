@@ -39,7 +39,48 @@ Interpret **Pakistani statutes**, apply **relevant case law**, and reason with *
 "${userQuery}"
 `;
 
-  //var to store the prompt and change based on user intent
+  // === Dynamic caselaw size handler ===
+
+  function buildCaselawSection(caselaws, maxChars = 12000) {
+    if (!caselaws?.length)
+      return "No caselaws found, rely on general legal understanding.";
+
+    let sections = [];
+    let currentChunk = "";
+    let currentSize = 0;
+
+    for (let i = 0; i < caselaws.length; i++) {
+      const c = caselaws[i];
+      if (!c.case_discription_plain) continue;
+
+      const desc = c.case_discription_plain.trim();
+      const size = desc.length;
+      const half = Math.ceil(size / 2);
+      const truncated = desc.slice(0, half);
+      const caseBlock = `**Case ${i + 1}:** ${truncated}\n\n`;
+
+      if (currentSize + size > maxChars && currentChunk) {
+        sections.push(currentChunk);
+        currentChunk = caseBlock;
+        currentSize = size;
+      } else {
+        currentChunk += caseBlock;
+        currentSize += size;
+      }
+    }
+
+    if (currentChunk) sections.push(currentChunk);
+
+    if (sections.join("").length <= maxChars) {
+      return `Candidate caselaws:\n${sections.join("")}`;
+    }
+
+    return sections
+      .map((chunk, idx) => `### Caselaw Segment ${idx + 1}\n\n${chunk}`)
+      .join("\n\n");
+  }
+
+  // === Enhanced promptCaselaw ===
   let promptCaselaw = `
 You are a professional Pakistani legal assistant specializing in:
 - Constitutional Law (fundamental rights, legislative competence, judicial review)
@@ -61,7 +102,6 @@ You are a professional Pakistani legal assistant specializing in:
 - Arbitration and Alternate Dispute Resolution  
 
 Your core function: interpret Pakistani statutes, apply relevant case law, and reason with procedural accuracy and citation discipline.
-
 
 Behavior rules:
 - For greetings or polite small talk, respond naturally and courteously. Do not mention laws or cases.
@@ -90,7 +130,6 @@ Caselaw Handling:
 - If no caselaws are relevant, rely solely on statutory interpretation.
 - Never fabricate rulings, case names, or citations.
 
-
 Prohibitions:
 - Never output plain text — **all content must be Markdown formatted**.  
 - Never insert conversational tone in legal reasoning.  
@@ -98,40 +137,23 @@ Prohibitions:
 - Never wrap full responses in code fences unless the output must be displayed **literally**.  
 - Never present “AI explanations” or self-reference — act as a **human legal expert**.
 
-
 User question:
 "${userQuery}"
 
-${
-  caselaws?.length
-    ? `Candidate caselaws:\n${caselaws
-        .slice(0, 3)
-        .map((c, i) => {
-          if (!c.case_discription_plain) return null;
-          const desc = c.case_discription_plain.trim();
-          const half = Math.ceil(desc.length / 2);
-          const truncated = desc.slice(0, half);
-          return `**Case ${i + 1}:** ${truncated}`;
-        })
-        .filter(Boolean)
-        .join("\n\n")}`
-    : "No caselaws found, rely on general legal understanding."
-}
+${buildCaselawSection(caselaws)}
 
 Attachment Policy:
-
 - Do not attach related case IDs if they are not 50% relevant to the user query or response, unless the user explicitly requests all related cases.
 - **Relevance Rule:** Append the "related cases" block only if:
   1. The model’s reasoning explicitly cites or draws from at least one of the listed caselaws.
   2. The semantic similarity score between the user query and case content exceeds 0.85 (via embeddings or keyword overlap).
-
 - Limit the number of attached cases to 3–5 for clarity and efficiency.
 - Ensure related cases are meaningfully referenced to avoid clutter or misleading suggestions.
 
 Formatting:
 - If the relevance rule is met, append at the end:
 
-if caseIds length >0 the show the following:
+if caseIds length > 0 show the following:
 
 Here are **${
     caseIds.length
@@ -148,7 +170,6 @@ ${
     )
     .join("\n")
 }
-
 `;
 
   if (caselaws && caselaws?.length > 0) {
