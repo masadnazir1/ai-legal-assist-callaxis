@@ -1,4 +1,9 @@
-export const proviedPrompt = async (userQuery, caselaws, caseIds) => {
+export const proviedPrompt = async (
+  userQuery,
+  caselaws,
+  caseIds,
+  caseEntries
+) => {
   let prompt = null;
 
   prompt = `
@@ -41,16 +46,26 @@ Interpret **Pakistani statutes**, apply **relevant case law**, and reason with *
 
   // === Dynamic caselaw size handler ===
 
+  console.log("caseEntries", caseEntries);
+
   function buildCaselawSection(caselaws, maxChars = 12000) {
     if (!caselaws?.length)
       return "No caselaws found, rely on general legal understanding.";
 
+    let selectedCaselaws = [];
+
+    if (Array.isArray(caselaws) && caselaws.length > 0) {
+      selectedCaselaws = caselaws.length > 5 ? caselaws.slice(0, 5) : caselaws;
+    }
+
+    console.log("selectedCaselaws ", selectedCaselaws.length);
     let sections = [];
     let currentChunk = "";
     let currentSize = 0;
 
-    for (let i = 0; i < caselaws.length; i++) {
-      const c = caselaws[i];
+    for (let i = 0; i < selectedCaselaws.length; i++) {
+      const c = selectedCaselaws[i];
+
       if (!c.case_discription_plain) continue;
 
       const desc = c.case_discription_plain.trim();
@@ -74,6 +89,12 @@ Interpret **Pakistani statutes**, apply **relevant case law**, and reason with *
     if (sections.join("").length <= maxChars) {
       return `Candidate caselaws:\n${sections.join("")}`;
     }
+    console.log(
+      "LOG THE LENTH",
+      sections
+        .map((chunk, idx) => `### Caselaw Segment ${idx + 1}\n\n${chunk}`)
+        .join("\n\n").length
+    );
 
     return sections
       .map((chunk, idx) => `### Caselaw Segment ${idx + 1}\n\n${chunk}`)
@@ -82,24 +103,9 @@ Interpret **Pakistani statutes**, apply **relevant case law**, and reason with *
 
   // === Enhanced promptCaselaw ===
   let promptCaselaw = `
-You are a professional Pakistani legal assistant specializing in:
-- Constitutional Law (fundamental rights, legislative competence, judicial review)
-- Civil Procedure and Evidence (CPC, Qanun-e-Shahadat)
-- Criminal Law (PPC, CrPC, Anti-Terrorism, NAB, FIA)
-- Family Law (Nikah, Talaq, Khula, Maintenance, Guardianship)
-- Property and Land Law (Transfer of Property Act, Land Revenue, Tenancy, Housing Societies)
-- Contract and Commercial Law (Contract Act, Companies Act, Negotiable Instruments, Partnership)
-- Labour and Employment Law (Industrial Relations, Factories, Wages, Service Tribunals)
-- Banking and Finance Law (Banking Courts, Recovery, Islamic Finance)
-- Taxation (Income Tax, Sales Tax, Customs)
-- Constitutional Petitions and Writ Jurisdiction
-- Human Rights and Public Interest Litigation
-- Administrative and Service Law
-- Cybercrime and Electronic Transactions
-- Intellectual Property (Copyright, Trademark, Patent)
-- Environmental Law
-- Consumer Protection and Competition Law
-- Arbitration and Alternate Dispute Resolution  
+ You are an expert Pakistani legal assistant with knowledge across all areas of law.
+ Always interpret the user's intent, even if the query contains typos, misspellings, or minor errors, and respond accurately based on the intended meaning.
+
 
 Your core function: interpret Pakistani statutes, apply relevant case law, and reason with procedural accuracy and citation discipline.
 
@@ -112,6 +118,32 @@ Behavior rules:
 - If none of the provided caselaws are meaningfully related, rely on general statutory interpretation.
 - If need to add Conclusion add that in the start and the rest response so user can easily find the respone summary.
 
+---
+### Link & Case Handling
+If the user requests **related case**, **references**, or **openable cases**, and anything that may require to add the links then add only 5 if user not specified if specified the quantity the add accordingly.  
+then output the provided case links exactly as Markdown hyperlinks, using the following format:
+
+Render output exactly in this format, using only those verified IDs:
+${
+  caseEntries && caseEntries?.length > 0
+    ? caseEntries
+        .map(
+          (c, i) =>
+            `**${i + 1}.** [${
+              c.case_title
+            }](https://pakistanlawhelp.com/my-account/case-laws.php?filter_related=${
+              c.case_id
+            })`
+        )
+        .join("\n")
+    : ""
+}
+
+
+
+
+
+---
 All responses must follow these formatting rules:
 - Use enhanced advanced **Markdown** formatting only.
 - Use clear headings (## for section titles).
@@ -139,6 +171,7 @@ Prohibitions:
 
 User question:
 "${userQuery}"
+
 
 ${buildCaselawSection(caselaws)}
 

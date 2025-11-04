@@ -9,10 +9,11 @@ const openai = new OpenAI({
 export async function generateSearchableKeyword(userInput) {
   try {
     const prompt = `
-You are an expert Pakistani legal query interpreter.
-Decide two things:
-1. Whether the current query requires **case law search**.
-2. Extract a concise, search-optimized legal keyword string.
+You are an expert Pakistani legal query interpreter. Decide two things: 
+1. Whether the current query requires **case law search**. 
+2. Extract a concise, search-optimized legal keyword string. 
+Do not check or correct the user's spelling; interpret the intent accurately even if the query contains typos or misspellings.
+
 
 Return JSON only:
 {
@@ -21,14 +22,16 @@ Return JSON only:
 }
 
 Rules for "search":
-- true → when the user **directly requests case laws, judgments, citations, or precedents** (mentions like PLD, SCMR, YLR, etc.)
-- false → when the user is **asking a follow-up question** about a previously mentioned case (e.g., "who were the judges", "what was the ratio", "explain above case", "continue previous one").
-- false → for general explanations, definitions, or statutory interpretation without case references.
+- true → when the user directly or indirectly requests **case laws, judgments, citations, or precedents**.  
+  Examples: "give me cases", "show references", "find judgments", "related to khulla", "relevant precedents", "case law for", "citations on", "examples of", etc.
+- false → when the user only asks **to explain, summarize, identify judges, ratio decidendi, or discuss the previous case**.
+- false → for pure statutory or definitional explanations without any case-finding intent.
+
 
 Rules for "keyword":
-- Use concise legal citation or normalized doctrine if applicable.
-- Otherwise return minimal clean phrase summarizing legal intent.
-- Never repeat full query text.
+- Extract or normalize the *core legal concept* or *case reference*.
+- Use minimal, search-efficient phrase (e.g. "Khulla cases", "Article 199 Constitution", "Maintenance Family Law", etc.)
+- Never echo full user input or unnecessary words.
 
 Examples:
 Input: "Summarize PLD 2000 FSC 1 about Zakat and Ushr laws."
@@ -49,6 +52,21 @@ Output: {"search": true, "keyword": "3837"}
 Input: "Who were the judges in PLD 2010 Federal Shariat Court 1"
 Output: {"search": true, "keyword": "PLD 2010 Federal Shariat"}
 
+Input: "give me caselaws , give me pld related to x case or related to x family matter eg khulla"
+Output: {"search": true, "keyword": "PLD x year x related keyword"}
+
+
+Prohibitions:
+- **Never output generic keywords** like "cases", "case laws", "judgments", "references", or "precedents" — these cause irrelevant searches.  
+- For example, if the query is:
+  "give me some cases related to khulla and talaq links clickable and don't add any summary or explanation just links"
+  →  Do NOT return "cases", "case laws", or "family cases".
+  →  Instead, return a precise composite keyword such as "Khulla and Talaq Family Law".
+- If the user’s request is **only for clickable links or output format** (no actual case search intent),
+  then set:
+  "search": false,
+  "keyword": ""
+- The "keyword" must always represent a specific legal doctrine, article, or identifiable issue — never a placeholder term.
 
 
 Now process:
@@ -75,11 +93,6 @@ Now process:
       parsed = JSON.parse(raw);
     } catch {
       parsed = { search: false, keyword: "" };
-    }
-
-    // additional safeguard — no PLD in input => never search
-    if (!/\b(PLD|SCMR|YLR|MLD|CLC|PCR|PCrLJ)\b/i.test(userInput)) {
-      parsed.search = false;
     }
 
     console.log(`

@@ -24,15 +24,20 @@
  */
 
 import axios from "axios";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export async function searchCaselaws(query) {
+  const apiKey = process.env.SEARCH_API;
   try {
     const response = await axios.get(
       "http://217.217.253.38:7700/indexes/case_laws/search",
       {
-        params: { q: query, limit: 5 }, // increase or decrease the limit as required
+        params: { q: query, limit: 30 }, // increase or decrease the limit as required
         headers: {
-          Authorization: `Bearer M4z1Jcden-H6TuxSv0jrEdOl6joURcZUQ9ufI5JpDOw`, // Authorization key
+          //SEARCH_API
+          Authorization: `Bearer ${apiKey}`, // Authorization key
           "Content-Type": "application/json",
         },
       }

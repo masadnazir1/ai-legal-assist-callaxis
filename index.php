@@ -694,6 +694,8 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
             textarea.value = savedQuery;
             textarea.dispatchEvent(new Event("input"));
             localStorage.removeItem("prefilledQuery")
+            processRequest()
+
         }
     });
 

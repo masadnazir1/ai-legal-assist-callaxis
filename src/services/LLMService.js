@@ -51,7 +51,18 @@ const activeControllers = {};
 //memory store to save the user histroy for contextual streaming
 const chatSessions = new Map(); // { userId: [ { role, content }, ... ] }
 
-// Stream AI response via Express
+// Cleanup interval: every 10 minutes, delete sessions older than 2 hours
+setInterval(() => {
+  const now = Date.now();
+  const EXPIRATION_TIME = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+  for (const [userId, session] of chatSessions.entries()) {
+    if (now - session.lastUsed > EXPIRATION_TIME) {
+      chatSessions.delete(userId);
+      console.log(`Deleted inactive chat session for user: ${userId}`);
+    }
+  }
+}, 10 * 60 * 1000); // runs every 10 minutes
+
 export const generateAIResponse = async (
   userId,
   userQuery,
@@ -64,39 +75,67 @@ export const generateAIResponse = async (
 
   //
   if (res) res.setHeader("X-Stream-ID", streamId);
+
   //
   let caseIds = [];
 
   if (Array.isArray(caselaws) && caselaws.length > 0) {
-    caseIds = caselaws.slice(0, 5).map((c) => c.id);
+    caseIds = caselaws.slice(0, 20).map((c) => c.id);
+
+    // const my = caselaws.slice()
   } else {
     logger.warn("No caselaws provided to AI service");
   }
 
   //
   let caseTexts = [];
+
   if (Array.isArray(caselaws) && caselaws.length > 0) {
     caseTexts = caselaws
       .slice(0, 5)
       .map((c) => c.case_discription_plain.split("\n")[0]);
   }
 
+  let caseEntries = [];
+
+  if (Array.isArray(caselaws) && caselaws.length > 0) {
+    caseEntries = caselaws.slice(0, 5).map((c) => {
+      const title =
+        typeof c.case_discription_plain === "string"
+          ? c.case_discription_plain
+              .trim()
+              .split("\n")[0]
+              .substring(0, 350) // limit excessive text length
+              .replace(/\s+/g, " ")
+          : "";
+      return {
+        case_id: c.id,
+        case_title: title,
+      };
+    });
+  } else {
+    logger.warn("No caselaws provided to AI service");
+  }
+
   //some functions to handle the features
 
   function getChatHistory(userId) {
-    if (!chatSessions.has(userId)) chatSessions.set(userId, []);
-    return chatSessions.get(userId);
+    if (!chatSessions.has(userId))
+      chatSessions.set(userId, { history: [], lastUsed: Date.now() });
+    const session = chatSessions.get(userId);
+    session.lastUsed = Date.now();
+    return session.history;
   }
 
   function saveChatHistory(userId, history) {
     if (history.length > 20) history.splice(0, history.length - 20);
-    chatSessions.set(userId, history);
+    chatSessions.set(userId, { history, lastUsed: Date.now() });
   }
 
   const history = getChatHistory(userId);
 
   try {
-    let prompt = await proviedPrompt(userQuery, caselaws, caseIds);
+    let prompt = await proviedPrompt(userQuery, caselaws, caseIds, caseEntries);
 
     // Detect client disconnect
     res.on("close", () => {
