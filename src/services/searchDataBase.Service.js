@@ -28,13 +28,13 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export async function searchCaselaws(query) {
+export async function searchDataBase(query, searchType) {
   const apiKey = process.env.SEARCH_API;
   try {
     const response = await axios.get(
-      "http://217.217.253.38:7700/indexes/case_laws/search",
+      `http://217.217.253.38:7700/indexes/${searchType}/search`,
       {
-        params: { q: query, limit: 30 }, // increase or decrease the limit as required
+        params: { q: query, limit: 100 }, // increase or decrease the limit as required
         headers: {
           //SEARCH_API
           Authorization: `Bearer ${apiKey}`, // Authorization key
@@ -43,7 +43,7 @@ export async function searchCaselaws(query) {
       }
     );
 
-    //  Return only the useful part of response
+    //Return only the useful part of response
     return response.data.hits;
   } catch (error) {
     console.error("Error searching MeiliSearch:", error.message);

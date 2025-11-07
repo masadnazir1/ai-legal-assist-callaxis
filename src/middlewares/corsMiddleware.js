@@ -1,5 +1,5 @@
 export const corsMiddleware = (req, res, next) => {
-  const allowedOrigins = (process.env.CLIENT_URLS || "")
+  const allowedOrigins = (process.env.CLIENT_URLS || "http://localhost:3000")
     .split(",")
     .map((url) => url.trim());
 

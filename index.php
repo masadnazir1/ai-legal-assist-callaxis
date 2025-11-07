@@ -443,6 +443,7 @@ require_once __DIR__ . '/../jwt/jwt-session.php';
         transition: background 0.3s;
         padding: 5px;
 
+
     }
 
     .send-message-button-ai:hover {

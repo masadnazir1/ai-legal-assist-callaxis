@@ -2,149 +2,123 @@
  * generateAIResponse
  * ------------------
  * Generates a case-supported legal answer to a user query using OpenAI's GPT-4o-mini model.
- * Can stream the response directly to an Express.js client via Server-Sent Events (SSE)
- * or return the full response as a string.
+ * Can stream the response directly to an Express.js client via SSE or return the full response as a string.
  *
  * Features:
- * - Uses the first 5 lines of the provided caselaws as context.
- * - Appends a prompt for the AI to cite cases and ask the user about more related cases.
- * - Supports both streaming (SSE) and non-streaming response modes.
+ * - Uses the first few lines of the provided caselaws/statutes as context.
+ * - Supports both streaming (SSE) and non-streaming modes.
+ * - Maintains per-user chat history for contextual responses.
+ * - Handles client disconnects, network issues, and OpenAI quota errors gracefully.
  *
+ * @param {string} userId - Unique identifier for the user/session.
  * @param {string} userQuery - The legal question or query from the user.
  * @param {Array<Object>} caselaws - Array of case objects. Each object should have a `case_discription_plain` field.
- * @param {import("express").Response} [res=null] - Optional Express.js response object. If provided, enables streaming the AI response.
+ * @param {Array<Object>} statutes - Array of statute objects. Each object should have a `detail_plain` field.
+ * @param {import("express").Response} [res=null] - Optional Express response object for streaming.
  *
  * @returns {Promise<Object|void>}
- * - If `res` is not provided: Returns a Promise resolving to an object:
- *   { summary: string, related: string[] }.
- *   - `summary`: The AI-generated answer as a string.
- *   - `related`: Array of first lines from provided caselaws.
- * - If `res` is provided: Streams the response via SSE and returns nothing.
- *
- * @example
- * // Non-streaming usage
- * const result = await generateAIResponse("Explain doctrine of necessity", caselawsArray);
- * console.log(result.summary, result.related);
- *
- * @example
- * // Streaming usage in Express
- * app.post("/search", async (req, res) => {
- *   await generateAIResponse(req.body.query, caselawsArray, res);
- * });
- *
- * @throws {Error} Throws if OpenAI service fails or streaming fails.
+ * - If `res` is not provided: resolves to { summary: string, related: string[] }.
+ * - If `res` is provided: streams response via SSE and returns nothing.
  */
 
 import OpenAI from "openai";
-import { logger } from "../Utils/logger.js";
+import crypto from "crypto";
 import dotenv from "dotenv";
+import { logger } from "../Utils/logger.js";
 import { proviedPrompt } from "../Utils/prompts.js";
 
 dotenv.config();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const activeControllers = {};
+const chatSessions = new Map(); // { userId: { history: [], lastUsed: timestamp } }
 
-//memory store to save the user histroy for contextual streaming
-const chatSessions = new Map(); // { userId: [ { role, content }, ... ] }
-
-// Cleanup interval: every 10 minutes, delete sessions older than 2 hours
+// Cleanup old sessions every 10 minutes
 setInterval(() => {
   const now = Date.now();
-  const EXPIRATION_TIME = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+  const EXPIRATION = 2 * 60 * 60 * 1000; // 2 hours
   for (const [userId, session] of chatSessions.entries()) {
-    if (now - session.lastUsed > EXPIRATION_TIME) {
+    if (now - session.lastUsed > EXPIRATION) {
       chatSessions.delete(userId);
-      console.log(`Deleted inactive chat session for user: ${userId}`);
+      logger.info(`Deleted inactive chat session for user: ${userId}`);
     }
   }
-}, 10 * 60 * 1000); // runs every 10 minutes
+}, 10 * 60 * 1000);
 
 export const generateAIResponse = async (
   userId,
   userQuery,
   caselaws = [],
+  statutes = [],
   res = null
 ) => {
+  // Ensure arrays
+  caselaws = Array.isArray(caselaws) ? caselaws : [];
+  statutes = Array.isArray(statutes) ? statutes : [];
+
   const streamId = crypto.randomUUID();
   const controller = new AbortController();
   activeControllers[streamId] = controller;
 
-  //
   if (res) res.setHeader("X-Stream-ID", streamId);
 
-  //
-  let caseIds = [];
-
-  if (Array.isArray(caselaws) && caselaws.length > 0) {
-    caseIds = caselaws.slice(0, 20).map((c) => c.id);
-
-    // const my = caselaws.slice()
-  } else {
-    logger.warn("No caselaws provided to AI service");
-  }
-
-  //
-  let caseTexts = [];
-
-  if (Array.isArray(caselaws) && caselaws.length > 0) {
-    caseTexts = caselaws
-      .slice(0, 5)
-      .map((c) => c.case_discription_plain.split("\n")[0]);
-  }
-
-  let caseEntries = [];
-
-  if (Array.isArray(caselaws) && caselaws.length > 0) {
-    caseEntries = caselaws.slice(0, 5).map((c) => {
-      const title =
-        typeof c.case_discription_plain === "string"
-          ? c.case_discription_plain
+  // Helper to extract entries for AI context
+  const extractEntries = (arr, key, limit = 5) =>
+    arr.slice(0, limit).map((item) => ({
+      case_id: item.id,
+      case_title:
+        typeof item[key] === "string"
+          ? item[key]
               .trim()
               .split("\n")[0]
-              .substring(0, 350) // limit excessive text length
+              .substring(0, 350)
               .replace(/\s+/g, " ")
-          : "";
-      return {
-        case_id: c.id,
-        case_title: title,
-      };
-    });
-  } else {
-    logger.warn("No caselaws provided to AI service");
-  }
+          : "",
+    }));
 
-  //some functions to handle the features
+  const caseEntries = extractEntries(caselaws, "case_discription_plain");
+  const statuteEntries = extractEntries(statutes, "detail_plain");
 
-  function getChatHistory(userId) {
-    if (!chatSessions.has(userId))
-      chatSessions.set(userId, { history: [], lastUsed: Date.now() });
-    const session = chatSessions.get(userId);
-    session.lastUsed = Date.now();
-    return session.history;
-  }
+  const caseTexts = caselaws
+    .slice(0, 5)
+    .map((c) => c.case_discription_plain?.split("\n")[0] || "");
+  const statuteTexts = statutes
+    .slice(0, 5)
+    .map((s) => s.detail_plain?.split("\n")[0] || "");
 
-  function saveChatHistory(userId, history) {
-    if (history.length > 20) history.splice(0, history.length - 20);
-    chatSessions.set(userId, { history, lastUsed: Date.now() });
-  }
+  // Chat history management
+  const session = chatSessions.get(userId) || {
+    history: [],
+    lastUsed: Date.now(),
+  };
+  session.lastUsed = Date.now();
+  const history = session.history;
 
-  const history = getChatHistory(userId);
+  const saveHistory = (userId, historyArr) => {
+    if (historyArr.length > 20) historyArr.splice(0, historyArr.length - 20);
+    chatSessions.set(userId, { history: historyArr, lastUsed: Date.now() });
+  };
 
   try {
-    let prompt = await proviedPrompt(userQuery, caselaws, caseIds, caseEntries);
+    const prompt = await proviedPrompt(
+      userQuery,
+      caselaws,
+      caselaws.map((c) => c.id),
+      caseEntries,
+      statuteTexts,
+      statuteEntries
+    );
 
-    // Detect client disconnect
-    res.on("close", () => {
-      if (activeControllers[streamId]) {
-        controller.abort();
-        delete activeControllers[streamId];
-        console.log("Client disconnected, stream aborted:", streamId);
-      }
-    });
+    // Handle client disconnect
+    if (res) {
+      res.on("close", () => {
+        if (activeControllers[streamId]) {
+          controller.abort();
+          delete activeControllers[streamId];
+          logger.info(`Client disconnected, stream aborted: ${streamId}`);
+        }
+      });
+    }
 
     const messages = [
       {
@@ -156,26 +130,25 @@ export const generateAIResponse = async (
       { role: "user", content: prompt },
     ];
 
-    // Stream completion
+    // Stream or non-stream
     const stream = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages,
       temperature: 0.4,
       max_tokens: 1600,
-      stream: true,
+      stream: !!res,
     });
 
-    // Non-streaming
+    // Non-stream mode
     if (!res) {
-      // If not streaming via Express, return as string
       let fullText = "";
-      for await (const chunk of stream) {
+      for await (const chunk of stream ?? []) {
         fullText += chunk.choices?.[0]?.delta?.content || "";
       }
       return { summary: fullText.trim(), related: caseTexts };
     }
 
-    // Setup SSE headers
+    // SSE streaming mode
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
@@ -183,39 +156,51 @@ export const generateAIResponse = async (
 
     let fullText = "";
 
-    for await (const chunk of stream) {
-      const content = chunk.choices?.[0]?.delta?.content || "";
+    for await (const chunk of stream ?? []) {
+      const content = chunk.choices?.[0]?.delta?.content;
       if (!content) continue;
 
       fullText += content;
-
-      // Escape newlines for SSE safety, send JSON per chunk
-      const payload = JSON.stringify({ content });
-      res.write(`data: ${payload}\n\n`);
+      res.write(`data: ${JSON.stringify({ content })}\n\n`);
     }
 
-    // End stream
     res.write(`data: [DONE]\n\n`);
     res.end();
 
-    const assistantReply = fullText.trim();
-
-    // Store conversation for context
+    // Save session history
     history.push({ role: "user", content: prompt });
-    history.push({ role: "assistant", content: assistantReply });
-    saveChatHistory(userId, history);
+    history.push({ role: "assistant", content: fullText.trim() });
+    saveHistory(userId, history);
 
     logger.info(`Stream completed successfully for user: ${userId}`);
-    return;
   } catch (error) {
-    if (error.name === "AbortError") console.log("Stream aborted:", streamId);
+    if (error.status === 429 || error.code === "insufficient_quota") {
+      logger.error("OpenAI quota exceeded");
+      if (res && !res.headersSent) {
+        res.write(
+          `data: ${JSON.stringify({ error: "OpenAI quota exceeded" })}\n\n`
+        );
+        res.write(`data: [DONE]\n\n`);
+        res.end();
+      }
+      return;
+    }
+
+    if (error.name === "AbortError") {
+      logger.warn(`Stream aborted: ${streamId}`);
+      return;
+    }
 
     logger.error("OpenAI Stream Error:", error.message);
     if (res && !res.headersSent) {
-      res.write(`data: Error: ${error.message}\n\n`);
+      res.write(
+        `data: ${JSON.stringify({
+          error: error.message || "Failed to stream AI response",
+        })}\n\n`
+      );
+      res.write(`data: [DONE]\n\n`);
       res.end();
     }
-    throw new Error("Failed to stream AI response", error);
   } finally {
     delete activeControllers[streamId];
   }
