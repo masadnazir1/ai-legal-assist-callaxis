@@ -20,10 +20,9 @@ Do two things:
    - "none" → general legal knowledge, definitions, or conceptual queries
 
 2. **Enhance** the user query for optimal LLM response:
-   - Correct typos and grammatical errors
-   - Clarify context and legal domain
-   - Maintain original intent
-   - If possible, add statute/caselaw references inline for clarity
+   - Only Correct typos and grammatical errors dont change the user wordings 
+   - Maintain original intent must follow.
+
 
 Return **JSON only**:
 

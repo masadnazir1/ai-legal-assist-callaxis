@@ -19,16 +19,28 @@
  *   - Returns JSON error if validation or pre-streaming fails
  */
 
-import { searchDataBase } from "../services/searchDataBase.Service.js";
 import { generateAIResponse } from "../services/LLMService.js";
 import { generateSearchableKeyword } from "../services/aiKeywordService.js";
-import { generateStatuteKeyword } from "../services/generateStatuteKeyword.js";
 import { analyzeAndEnhanceQuery } from "../services/analyzeAndEnhanceQuery.js";
+import { generateStatuteKeyword } from "../services/generateStatuteKeyword.js";
+import { searchDataBase } from "../services/searchDataBase.Service.js";
+
+import { GuestLLMServive } from "../services/Guest.LLM.Servive.js";
 
 export const searchController = async (req, res) => {
-  const { query, session_id } = req.body;
+  const { query, session_id, user_Type } = req.body;
 
   try {
+    const user_Types = ["paid", "free", "guest"];
+
+    if (!user_Types.includes(user_Type)) {
+      return res.status(400).json({
+        success: false,
+        status: 400,
+        message: "user type is required in the body",
+      });
+    }
+
     // Validate inputs
     if (!query || !session_id) {
       return res.status(400).json({
@@ -37,16 +49,17 @@ export const searchController = async (req, res) => {
         message: "query or session_id is missing",
       });
     }
-
-    // Analyze & enhance query
-    const analysis = await analyzeAndEnhanceQuery(query);
-    console.log("analysis", analysis);
-
+    let analysis = "";
+    if (user_Type && user_Type !== "guest") {
+      // Analyze & enhance query
+      analysis = await analyzeAndEnhanceQuery(query);
+      console.log("analysis", analysis);
+    }
     const searchPromises = {};
 
     // Caselaw
     if (
-      analysis?.search_type === "caselaw" ||
+      (user_Type !== "guest" && analysis?.search_type === "caselaw") ||
       analysis?.search_type === "both"
     ) {
       searchPromises.caselaws = generateSearchableKeyword(query).then(
@@ -64,7 +77,7 @@ export const searchController = async (req, res) => {
 
     // Statute
     if (
-      analysis?.search_type === "statute" ||
+      (user_Type !== "guest" && analysis?.search_type === "statute") ||
       analysis?.search_type === "both"
     ) {
       searchPromises.statutes = generateStatuteKeyword(query).then(
@@ -79,31 +92,32 @@ export const searchController = async (req, res) => {
         }
       );
     }
-
+    let results = null;
     // Execute all searches in parallel
-    const results = await Promise.all(Object.values(searchPromises));
-
+    if (user_Type && user_Type !== "guest") {
+      results = await Promise.all(Object.values(searchPromises));
+    }
     // Map results back to keys
-    const keys = Object.keys(searchPromises);
-    const caselawsResult = results[keys.indexOf("caselaws")] || [];
-    const statutesResult = results[keys.indexOf("statutes")] || [];
-
-    console.log(
-      "Search results:",
-      "Caselaws =",
-      caselawsResult.length,
-      "Statutes =",
-      statutesResult.length
-    );
+    let caselawsResult = null;
+    let statutesResult = null;
+    if (user_Type && user_Type !== "guest") {
+      const keys = Object.keys(searchPromises);
+      caselawsResult = results[keys.indexOf("caselaws")] || [];
+      statutesResult = results[keys.indexOf("statutes")] || [];
+    }
 
     // Stream AI response
-    await generateAIResponse(
-      session_id,
-      analysis?.enhanced_query,
-      caselawsResult,
-      statutesResult,
-      res
-    );
+    if (user_Type == "paid") {
+      await generateAIResponse(
+        session_id,
+        analysis?.enhanced_query,
+        caselawsResult,
+        statutesResult,
+        res
+      );
+    } else if (user_Type == "guest") {
+      await GuestLLMServive(session_id, query, res);
+    }
   } catch (err) {
     console.error("Error in searchController:", err);
     if (!res.headersSent) {
