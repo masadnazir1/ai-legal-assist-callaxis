@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Configuration 1: Run your standard NPM development script in debug mode.
+      // This is ideal if you use tools like nodemon or ts-node via 'npm run dev'.
+      "name": "Dev Script (npm run dev)",
+      "request": "launch",
+      "type": "node-terminal",
+      "command": "npm run dev"
+    },
+    {
+      // Configuration 2: Directly launch and debug the main server file.
+      // Use this if the 'npm run dev' script is causing issues.
+      "name": "Debug Main Server File",
+      "type": "node",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      // *** IMPORTANT: CHANGE THIS PATH if your main file is not index.js ***
+      "program": "${workspaceFolder}/index.js",
+      // Set the working directory to the project root
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
