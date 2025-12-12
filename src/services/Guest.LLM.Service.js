@@ -33,7 +33,7 @@ setInterval(() => {
  * - userQuery: user's message text
  * - res: Express response object (for SSE streaming). If null, returns full text instead.
  */
-export const GuestLLMServive = async (userId, userQuery, res = null) => {
+export const GuestLLMService = async (userId, userQuery, res = null) => {
   // Create a stream ID so frontend can track this stream
   const streamId = crypto.randomUUID();
   const controller = new AbortController();

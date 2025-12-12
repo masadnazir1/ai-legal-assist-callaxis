@@ -25,7 +25,7 @@ import { analyzeAndEnhanceQuery } from "../services/analyzeAndEnhanceQuery.js";
 import { generateStatuteKeyword } from "../services/generateStatuteKeyword.js";
 import { searchDataBase } from "../services/searchDataBase.Service.js";
 
-import { GuestLLMServive } from "../services/Guest.LLM.Servive.js";
+import { GuestLLMService } from "../services/Guest.LLM.Service.js";
 
 export const searchController = async (req, res) => {
   const { query, session_id, user_Type } = req.body;
@@ -116,7 +116,7 @@ export const searchController = async (req, res) => {
         res
       );
     } else if (user_Type == "guest") {
-      await GuestLLMServive(session_id, query, res);
+      await GuestLLMService(session_id, query, res);
     }
   } catch (err) {
     console.error("Error in searchController:", err);
