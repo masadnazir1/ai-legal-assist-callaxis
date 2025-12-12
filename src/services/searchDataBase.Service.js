@@ -30,9 +30,10 @@ dotenv.config();
 
 export async function searchDataBase(query, searchType) {
   const apiKey = process.env.SEARCH_API;
+  const SearchUrl = process.env.SEARCH_URL;
   try {
     const response = await axios.get(
-      `http://217.217.253.38:7700/indexes/${searchType}/search`,
+      `${SearchUrl}/indexes/${searchType}/search`,
       {
         params: { q: query, limit: 100 }, // increase or decrease the limit as required
         headers: {
