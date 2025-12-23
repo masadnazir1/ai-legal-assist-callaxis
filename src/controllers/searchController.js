@@ -19,6 +19,7 @@
  *   - Returns JSON error if validation or pre-streaming fails
  */
 
+import { ROLES } from "../constants/userRoles.js";
 import { generateAIResponse } from "../services/LLMService.js";
 import { generateSearchableKeyword } from "../services/aiKeywordService.js";
 import { analyzeAndEnhanceQuery } from "../services/analyzeAndEnhanceQuery.js";
@@ -28,16 +29,23 @@ import { searchDataBase } from "../services/searchDataBase.Service.js";
 import { GuestLLMService } from "../services/Guest.LLM.Service.js";
 
 export const searchController = async (req, res) => {
-  const { query, session_id, user_Type } = req.body;
+  const { query, session_id, userRole } = req.body;
 
   try {
-    const user_Types = ["paid", "free", "guest"];
+    // ADMIN: 1,
+    // USER: 3,
+    // CONSULTANT: 7,
+    // RESEARCHER: 8,
 
-    if (!user_Types.includes(user_Type)) {
+    const validRoleIds = Object.values(ROLES);
+
+    console.log(userRole);
+
+    if (!validRoleIds.includes(userRole)) {
       return res.status(400).json({
         success: false,
         status: 400,
-        message: "user type is required in the body",
+        message: "Invalid user role",
       });
     }
 
@@ -50,7 +58,7 @@ export const searchController = async (req, res) => {
       });
     }
     let analysis = "";
-    if (user_Type && user_Type !== "guest") {
+    if (userRole && userRole !== ROLES.CONSULTANT && userRole !== ROLES.USER) {
       // Analyze & enhance query
       analysis = await analyzeAndEnhanceQuery(query);
       console.log("analysis", analysis);
@@ -59,7 +67,9 @@ export const searchController = async (req, res) => {
 
     // Caselaw
     if (
-      (user_Type !== "guest" && analysis?.search_type === "caselaw") ||
+      (userRole !== ROLES.CONSULTANT &&
+        userRole !== ROLES.USER &&
+        analysis?.search_type === "caselaw") ||
       analysis?.search_type === "both"
     ) {
       searchPromises.caselaws = generateSearchableKeyword(query).then(
@@ -77,7 +87,7 @@ export const searchController = async (req, res) => {
 
     // Statute
     if (
-      (user_Type !== "guest" && analysis?.search_type === "statute") ||
+      (userRole !== ROLES.CONSULTANT && analysis?.search_type === "statute") ||
       analysis?.search_type === "both"
     ) {
       searchPromises.statutes = generateStatuteKeyword(query).then(
@@ -94,20 +104,20 @@ export const searchController = async (req, res) => {
     }
     let results = null;
     // Execute all searches in parallel
-    if (user_Type && user_Type !== "guest") {
+    if (userRole && userRole !== ROLES.CONSULTANT) {
       results = await Promise.all(Object.values(searchPromises));
     }
     // Map results back to keys
     let caselawsResult = null;
     let statutesResult = null;
-    if (user_Type && user_Type !== "guest") {
+    if (userRole && userRole !== ROLES.CONSULTANT && userRole !== ROLES.USER) {
       const keys = Object.keys(searchPromises);
       caselawsResult = results[keys.indexOf("caselaws")] || [];
       statutesResult = results[keys.indexOf("statutes")] || [];
     }
 
     // Stream AI response
-    if (user_Type == "paid") {
+    if (userRole && userRole == ROLES.RESEARCHER) {
       await generateAIResponse(
         session_id,
         analysis?.enhanced_query,
@@ -115,7 +125,7 @@ export const searchController = async (req, res) => {
         statutesResult,
         res
       );
-    } else if (user_Type == "guest") {
+    } else if (userRole == ROLES.USER) {
       await GuestLLMService(session_id, query, res);
     }
   } catch (err) {
