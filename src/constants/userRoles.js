@@ -4,4 +4,6 @@ export const ROLES = {
   USER: 3,
   CONSULTANT: 7,
   RESEARCHER: 8,
+  BETA: 100,
+  MANAGER: 2,
 };

@@ -39,8 +39,6 @@ export const searchController = async (req, res) => {
 
     const validRoleIds = Object.values(ROLES);
 
-    console.log(userRole);
-
     if (!validRoleIds.includes(userRole)) {
       return res.status(400).json({
         success: false,
